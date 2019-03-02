@@ -17,4 +17,11 @@
     <color name="saveNewDonorButton">#C0403C</color>
 
     <color name="saveNewDonorButtonText">#FFFFFF</color>
+
+    <color name="list_item_color_background">#D6D6D6</color>
+
+    <color name="list_item_text_color">#A51D1D</color>
+
+    <color name="search_spinner_background">#F8F7F7</color>
+
 </resources>

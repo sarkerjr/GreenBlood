@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+
+import com.sarkerjr.greenBlood.MainActivity;
 import com.sarkerjr.greenBlood.data.BloodContract.DonorEntry;
 import com.sarkerjr.greenBlood.R;
 
@@ -37,16 +39,23 @@ public class DonorCursorAdapter extends CursorAdapter {
         int bloodTypeColumnIndex = cursor.getColumnIndex(DonorEntry.COLUMN_BLOOD_GROUP);
         int lastDonateColumnIndex = cursor.getColumnIndex(DonorEntry.COLUMN_DONATE_DATE);
 
-        // Read the donor attributes from the Cursor for the current pet
+        // Read the donor attributes from the Cursor for the current donor
         String donorName = cursor.getString(nameColumnIndex);
         String donorMobileNo = cursor.getString(mobileColumnIndex);
-        String donorBloodType = cursor.getString(bloodTypeColumnIndex);
+        //Need to get a int data from a database through string
+        int donorBloodType = cursor.getInt(bloodTypeColumnIndex);
+        String donorBloodTypeString;
+        try {
+            donorBloodTypeString = ((MainActivity) context).getBloodTypeString(donorBloodType);
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Trying to access MainActivity method from different context");
+        }
         String donorLastDonate = cursor.getString(lastDonateColumnIndex);
 
-        // Update the TextViews with the attributes for the current pet
+        // Update the TextViews with the attributes for the current donor
         nameTextView.setText(donorName);
         mobileTextView.setText(donorMobileNo);
-        bloodTypeTextView.setText(donorBloodType);
+        bloodTypeTextView.setText(donorBloodTypeString);
         lastDonateTextView.setText(donorLastDonate);
     }
 }

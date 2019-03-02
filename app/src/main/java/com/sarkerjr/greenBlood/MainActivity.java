@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 R.array.array_bloodType_options, android.R.layout.simple_spinner_item);
 
         // Specify dropdown layout style - simple list view with 1 item per line
-        bloodTypeSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        bloodTypeSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         // Apply the adapter to the spinner
         mBloodTypeSpinner.setAdapter(bloodTypeSpinnerAdapter);
@@ -109,22 +109,40 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void displayDatabaseInfo(){
+    // Get value of readable blood type
+    public String getBloodTypeString(int bloodType) {
+        switch (bloodType) {
+            case DonorEntry.A_Positive:
+                return getResources().getString(R.string.a_positive);
+            case DonorEntry.A_Negative:
+                return getResources().getString(R.string.a_negative);
+            case DonorEntry.B_Positive:
+                return getResources().getString(R.string.b_positive);
+            case DonorEntry.B_Negative:
+                return getResources().getString(R.string.b_negative);
+            case DonorEntry.O_Positive:
+                return getResources().getString(R.string.o_positive);
+            case DonorEntry.O_Negative:
+                return getResources().getString(R.string.o_negative);
+            case DonorEntry.AB_Positive:
+                return getResources().getString(R.string.ab_positive);
+            case DonorEntry.AB_Negative:
+                return getResources().getString(R.string.ab_negative);
+            default:
+                return "UNKNOWN";
+        }
+    }
 
-        String[] projection = {
-                DonorEntry.COLUMN_DONOR_NAME,
-                DonorEntry.COLUMN_DONOR_MOBILE,
-                DonorEntry.COLUMN_BLOOD_GROUP,
-                DonorEntry.COLUMN_DONATE_DATE };
+    private void displayDatabaseInfo() {
 
         String selection = DonorEntry.COLUMN_BLOOD_GROUP + "=?";
 
-        String [] selectionArgs = new String[] {getString(mBloodType)};
+        String[] selectionArgs = new String[]{String.valueOf(mBloodType)};
 
         Cursor cursor = getContentResolver().query(DonorEntry.CONTENT_URI,
-                projection, selection, selectionArgs,null);
+                null, selection, selectionArgs, null);
 
-        ListView listView = (ListView) findViewById(R.id.list);
+        ListView listView = findViewById(R.id.list);
 
         DonorCursorAdapter adapter = new DonorCursorAdapter(this, cursor);
 
