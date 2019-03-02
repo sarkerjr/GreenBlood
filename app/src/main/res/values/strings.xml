@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Green Blood</string>
+    <string name="search_button">Search</string>
+
+    <!--For gender spinner value-->
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+
+    <!--For blood group type spinner value-->
+    <string name="a_positive">A+</string>
+    <string name="a_negative">A-</string>
+    <string name="b_positive">B+</string>
+    <string name="b_negative">B-</string>
+    <string name="o_positive">O+</string>
+    <string name="o_negative">O-</string>
+    <string name="ab_positive">AB+</string>
+    <string name="ab_negative">AB-</string>
+    <string name="editor_insert_donor_failed">Insertation new donor unsuccessful</string>
+    <string name="editor_insert_donor_successful">Insertation new donor successful</string>
+</resources>
