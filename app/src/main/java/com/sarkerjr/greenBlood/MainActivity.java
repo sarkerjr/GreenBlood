@@ -1,7 +1,11 @@
 package com.sarkerjr.greenBlood;
 
+import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -16,9 +20,11 @@ import android.widget.Spinner;
 import com.sarkerjr.greenBlood.data.BloodContract;
 import com.sarkerjr.greenBlood.data.BloodContract.DonorEntry;
 import com.sarkerjr.greenBlood.data.DonorCursorAdapter;
+import com.sarkerjr.greenBlood.data.DonorProvider;
+
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     //Spinner for selecting blood group on search
     private Spinner mBloodTypeSpinner;
@@ -26,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private int mBloodType;
 
     private Button searchBtn;
+
+    private static final int DONOR_LOADER = 0;
+
+    DonorCursorAdapter mCursorAdapter;
 
 
     @Override
@@ -50,10 +60,21 @@ public class MainActivity extends AppCompatActivity {
         //Set the blood picker spinner
         setupBloodTypeSpinner();
 
+        // Find the ListView which will be populated with the pet data
+        ListView donorListView = (ListView) findViewById(R.id.list);
+
+        // Setup an Adapter to create a list item for each row of pet data in the Cursor.
+        // There is no pet data yet (until the loader finishes) so pass in null for the Cursor.
+        mCursorAdapter = new DonorCursorAdapter(this, null);
+        donorListView.setAdapter(mCursorAdapter);
+
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayDatabaseInfo();
+
+//                this.getContext().getContentResolver().notifyChange(DonorEntry.CONTENT_URI, null);
+
+                getLoaderManager().initLoader(DONOR_LOADER, null,MainActivity.this);
             }
         });
     }
@@ -133,19 +154,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void displayDatabaseInfo() {
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        //Projection for query method
+        String[] projection = {
+                DonorEntry._ID,
+                DonorEntry.COLUMN_DONOR_NAME,
+                DonorEntry.COLUMN_DONOR_MOBILE,
+                DonorEntry.COLUMN_DONATE_DATE,
+                DonorEntry.COLUMN_BLOOD_GROUP};
 
         String selection = DonorEntry.COLUMN_BLOOD_GROUP + "=?";
 
         String[] selectionArgs = new String[]{String.valueOf(mBloodType)};
 
-        Cursor cursor = getContentResolver().query(DonorEntry.CONTENT_URI,
-                null, selection, selectionArgs, null);
+        // This loader will execute the ContentProvider's query method on a background thread
+        return new CursorLoader(this,
+                DonorEntry.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null);
+    }
 
-        ListView listView = findViewById(R.id.list);
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mCursorAdapter.swapCursor(data);
+    }
 
-        DonorCursorAdapter adapter = new DonorCursorAdapter(this, cursor);
-
-        listView.setAdapter(adapter);
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mCursorAdapter.swapCursor(null);
     }
 }

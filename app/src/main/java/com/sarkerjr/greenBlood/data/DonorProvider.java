@@ -45,11 +45,13 @@ public class DonorProvider extends ContentProvider {
         // Get readable database
         SQLiteDatabase database = mDbHelper.getReadableDatabase();
 
-        // This cursor will hold the result of the query
-        Cursor cursor;
-
-        cursor = database.query(DonorEntry.TABLE_NAME, projection, selection, selectionArgs,
+        Cursor cursor = database.query(DonorEntry.TABLE_NAME, projection, selection, selectionArgs,
                 null, null, sortOrder);
+
+        //Set notification for whenever happen any change in cursor
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
+        getContext().getContentResolver().notifyChange(uri,null);
 
         return cursor;
     }
@@ -121,6 +123,9 @@ public class DonorProvider extends ContentProvider {
         if (id == -1) {
             return null;
         }
+
+        //Notify to the uri that the cursor has been changed
+        getContext().getContentResolver().notifyChange(uri,null);
 
         // Return the new URI with the ID (of the newly inserted row) appended at the end
         return ContentUris.withAppendedId(uri, id);
