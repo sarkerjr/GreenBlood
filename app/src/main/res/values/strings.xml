@@ -6,6 +6,9 @@
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
 
+    <string name="Editor_activity_title_new_donor">Add a donor</string>
+    <string name="Editor_activity_title_edit_donor">Edit info</string>
+
     <!--For blood group type spinner value-->
     <string name="a_positive">A+</string>
     <string name="a_negative">A-</string>
@@ -15,6 +18,25 @@
     <string name="o_negative">O-</string>
     <string name="ab_positive">AB+</string>
     <string name="ab_negative">AB-</string>
-    <string name="editor_insert_donor_failed">Insertation new donor unsuccessful</string>
-    <string name="editor_insert_donor_successful">Insertation new donor successful</string>
+
+    <!--For operation status messages-->
+    <string name="save_new_or_existing_donor">SAVE</string>
+    <string name="saving_donor_error_message">Error with adding donor!</string>
+    <string name="saving_donor_successful_message">Donor added successfully.</string>
+    <string name="updating_donor_error_message">Error with updating donor!</string>
+    <string name="updating_donor_successful_message">Donor updated successfully.</string>
+    <string name="action_delete">Delete</string>
+
+    <!--Alert messages for unsaved changes-->
+    <string name="unsaved_changes_dialog_msg">Discard your changes and quit editing?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+
+    <!--Alert message for delete confirmation message-->
+    <string name="delete_dialog_msg">Delete this pet?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="editor_delete_donor_failed">Failed deleting donor!</string>
+    <string name="editor_delete_donor_successful">Donor deleted successfully</string>
+
 </resources>

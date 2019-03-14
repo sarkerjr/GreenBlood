@@ -7,6 +7,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,6 +27,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    //Use for finding out, if the search button clicking for the first time or repeated
+    private boolean searchClick = false;
+
     //Spinner for selecting blood group on search
     private Spinner mBloodTypeSpinner;
 
@@ -36,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int DONOR_LOADER = 0;
 
     DonorCursorAdapter mCursorAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,21 +63,46 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //Set the blood picker spinner
         setupBloodTypeSpinner();
 
-        // Find the ListView which will be populated with the pet data
+        // Find the ListView which will be populated with the donor data
         ListView donorListView = (ListView) findViewById(R.id.list);
 
-        // Setup an Adapter to create a list item for each row of pet data in the Cursor.
-        // There is no pet data yet (until the loader finishes) so pass in null for the Cursor.
+        // Setup an Adapter to create a list item for each row of donor data in the Cursor.
+        // There is no donor data yet (until the loader finishes) so pass in null for the Cursor.
         mCursorAdapter = new DonorCursorAdapter(this, null);
         donorListView.setAdapter(mCursorAdapter);
 
+        //Listener for search button
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //If the search button click for the first time
+                if(searchClick == false){
+                    //Kick off the loader in Main_Activity
+                    getLoaderManager().initLoader(DONOR_LOADER, null,MainActivity.this);
+                    searchClick = true;
+                }
+                //If the search button pressed repeatedly
+                else {
+                    //Kick off the loader in Main_Activity
+                    getLoaderManager().restartLoader(DONOR_LOADER, null,MainActivity.this);
+                }
+            }
+        });
 
-//                this.getContext().getContentResolver().notifyChange(DonorEntry.CONTENT_URI, null);
+        donorListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Create new intent to go to EditorActivity
+                Intent intent = new Intent(MainActivity.this, EditorActivity.class);
 
-                getLoaderManager().initLoader(DONOR_LOADER, null,MainActivity.this);
+                // Form the content URI that represents the specific pet that was clicked on,
+                Uri currentPetUri = ContentUris.withAppendedId(DonorEntry.CONTENT_URI, id);
+
+                // Set the URI on the data field of the intent
+                intent.setData(currentPetUri);
+
+                // Launch the {@link EditorActivity} to display the data for the current pet.
+                startActivity(intent);
             }
         });
     }
@@ -185,5 +213,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mCursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        searchClick = false;
     }
 }

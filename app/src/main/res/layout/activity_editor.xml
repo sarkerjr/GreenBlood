@@ -117,6 +117,6 @@
         android:layout_gravity="center"
         android:background="@color/saveNewDonorButton"
         android:textColor="@color/saveNewDonorButtonText"
-        android:text="Add new donor"/>
+        android:text="@string/save_new_or_existing_donor"/>
 
 </LinearLayout>

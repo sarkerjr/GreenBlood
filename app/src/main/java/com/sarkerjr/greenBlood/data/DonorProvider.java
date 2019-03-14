@@ -45,14 +45,33 @@ public class DonorProvider extends ContentProvider {
         // Get readable database
         SQLiteDatabase database = mDbHelper.getReadableDatabase();
 
-        Cursor cursor = database.query(DonorEntry.TABLE_NAME, projection, selection, selectionArgs,
-                null, null, sortOrder);
+        // This cursor will hold the result of the query
+        Cursor cursor;
 
-        //Set notification for whenever happen any change in cursor
+        // Figure out if the URI matcher can match the URI to a specific code
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case DONORS:
+                // For the DONORS code, query the pets table directly with the given
+                cursor = database.query(DonorEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+            case DONOR_ID:
+                // For the DONOR_ID code, extract out the ID from the URI.
+                selection = DonorEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+
+                cursor = database.query(DonorEntry.TABLE_NAME, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot query unknown URI " + uri);
+        }
+
+        // Set notification URI on the Cursor
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-        getContext().getContentResolver().notifyChange(uri,null);
-
+        // Return the cursor
         return cursor;
     }
 
@@ -132,12 +151,118 @@ public class DonorProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+        // Get writeable database
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        // Track the number of rows that were deleted
+        int rowsDeleted;
+
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case DONORS:
+                // Delete all rows that match the selection and selection args
+                rowsDeleted = database.delete(DonorEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case DONOR_ID:
+                // Delete a single row given by the ID in the URI
+                selection = DonorEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                rowsDeleted = database.delete(DonorEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
+
+        // If 1 or more rows were deleted, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        // Return the number of rows deleted
+        return rowsDeleted;
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+    public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case DONORS:
+                return updateDonor(uri, contentValues, selection, selectionArgs);
+            case DONOR_ID:
+                // For the PET_ID code, extract out the ID from the URI,
+                // so we know which row to update. Selection will be "_id=?" and selection
+                // arguments will be a String array containing the actual ID.
+                selection = DonorEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                return updateDonor(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    //Update pets in the database with the given content values.
+    private int updateDonor(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+
+        // check that the name value is not null.
+        if (values.containsKey(DonorEntry.COLUMN_DONOR_NAME)) {
+            String name = values.getAsString(DonorEntry.COLUMN_DONOR_NAME);
+            if (name == null) {
+                throw new IllegalArgumentException("Pet requires a name");
+            }
+        }
+
+        // check that the mobile No value is not null.
+        if (values.containsKey(DonorEntry.COLUMN_DONOR_MOBILE)) {
+            String mobile = values.getAsString(DonorEntry.COLUMN_DONOR_MOBILE);
+            if (mobile == null) {
+                throw new IllegalArgumentException("Donor requires a mobile no");
+            }
+        }
+
+        // check that the last donate date value is not null.
+        if (values.containsKey(DonorEntry.COLUMN_DONATE_DATE)) {
+            String lastDonate = values.getAsString(DonorEntry.COLUMN_DONATE_DATE);
+            if (lastDonate == null) {
+                throw new IllegalArgumentException("Pet requires a last donate date");
+            }
+        }
+
+        // check that the gender value is valid.
+        if (values.containsKey(DonorEntry.COLUMN_DONOR_GENDER)) {
+            Integer gender = values.getAsInteger(DonorEntry.COLUMN_DONOR_GENDER);
+            if (gender == null || !DonorEntry.isValidGender(gender)) {
+                throw new IllegalArgumentException("Donor requires valid gender");
+            }
+        }
+
+        // check that the blood type value is valid.
+        if (values.containsKey(DonorEntry.COLUMN_BLOOD_GROUP)) {
+            Integer bloodType = values.getAsInteger(DonorEntry.COLUMN_BLOOD_GROUP);
+            if (bloodType == null || !DonorEntry.isValidBloodType(bloodType)) {
+                throw new IllegalArgumentException("Donor requires valid blood type");
+            }
+        }
+
+        // If there are no values to update, then don't try to update the database
+        if (values.size() == 0) {
+            return 0;
+        }
+
+        // Otherwise, get writable database to update the data
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        // Perform the update on the database and get the number of rows affected
+        int rowsUpdated = database.update(DonorEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        // If 1 or more rows were updated, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        // Return the number of rows updated
+        return rowsUpdated;
     }
 }
